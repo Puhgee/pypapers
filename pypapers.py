@@ -5,27 +5,72 @@ Created on Fri FEb 10 13:45:27 2014
 @author: grunert
 """
 import sys
+import os
 from PyQt4 import QtGui, QtCore
+from pdfminer.pdfparser import PDFParser
+from pdfminer.pdfdocument import PDFDocument
 
 class PYPAPERS(QtGui.QWidget):
-    def __init__(self):
-        super(PYPAPERS, self).__init__()        
+    path = ""
+    def __init__(self, argpath):
+        super(PYPAPERS, self).__init__()   
+        self.path = argpath
         self.initUI()
+
 
     def initUI(self):
         
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
         
-        self.setToolTip('Close this!')
-        
+        #self.setToolTip('Close this!')
+
+        #lbox1 = QtGui.QListWidget(self) 
+        #lbox1.resize(280,260)
+        #lbox1.move (10,10)
+        authorbox = QtGui.QTreeWidget(self) 
+        authorbox.resize(580,260)
+        authorbox.move (10,10)
+        authorbox.setHeaderLabels(["Title","Author","Journal","Data_Name"])
+        i = 0
+        print self.path
+        for dirname, dirnames, filenames in os.walk(self.path):
+            for filename in filenames:
+                i += 1
+                if i >= 30:
+                    break;
+                if filename.endswith(".pdf"):
+                    try:
+                        #print filename
+                        fp = open(dirname + "\\" + filename, 'rb')
+                        parser = PDFParser(fp)
+                        doc = PDFDocument(parser)
+                        parser.set_document(doc)
+                        try:
+                            authordict = doc.info[0]["Author"]
+                        except:
+                            authordict = "NA"
+                        try:
+                            titledict = doc.info[0]["Title"]
+                        except:
+                            titledict = "NA"
+                        try:
+                            journaldict = doc.info[0]["Subject"]
+                        except:
+                            journaldict = "NA"
+                        QtGui.QTreeWidgetItem(authorbox,[titledict,authordict,journaldict,filename])
+                        fp.close
+                    except:
+                        QtGui.QTreeWidgetItem(authorbox,["NA","NA","NA",filename])
+                
+                #lbox1.addItem('%s' % filename)
         btn = QtGui.QPushButton('Close', self)
         btn.clicked.connect(QtCore.QCoreApplication.quit)
  
-        btn.setToolTip('This is a <b>Button</b> widget')
+        btn.setToolTip('<b>Close</b>')
         btn.resize(btn.sizeHint())
-        btn.move(50, 50)       
+        btn.move(220, 270)       
         
-        self.resize(300, 200) #position,groesse
+        self.resize(600, 300) #breite,hoehe
         self.center()
         self.setWindowTitle('pypapers')    
         
@@ -49,7 +94,7 @@ class PYPAPERS(QtGui.QWidget):
         
 def main():  
     app = QtGui.QApplication(sys.argv)
-    pypapers = PYPAPERS()    
+    pypapers = PYPAPERS(sys.argv[1])    
     sys.exit(app.exec_())
 
 
