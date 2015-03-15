@@ -1,0 +1,1 @@
+Local PDF Manager for scientific use based on Qt and pdfminer
